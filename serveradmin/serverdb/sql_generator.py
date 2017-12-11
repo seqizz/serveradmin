@@ -7,7 +7,6 @@ from adminapi.filters import (
     All,
     Any,
     BaseFilter,
-    Comparison,
     Contains,
     ContainedBy,
     ContainedOnlyBy,
@@ -90,11 +89,7 @@ def _get_sql_condition(servertypes, attribute, filt):
         else:
             template = '{{0}}::text ~ E{0}'.format(value)
 
-    elif isinstance(filt, (
-        Comparison,
-        GreaterThanOrEquals,
-        LessThanOrEquals,
-    )):
+    elif isinstance(filt, (GreaterThanOrEquals, LessThanOrEquals)):
         template = _basic_comparison_filter_template(attribute, filt)
 
     elif isinstance(filt, Overlaps):
@@ -157,14 +152,12 @@ def _basic_comparison_filter_template(attribute, filt):
             'Cannot compare hostname attribute "{}"'.format(attribute)
         )
 
-    if isinstance(filt, Comparison):
-        operator = filt.comparator
-    elif isinstance(filt, GreaterThan):
+    if isinstance(filt, GreaterThan):
         operator = '>'
-    elif isinstance(filt, GreaterThanOrEquals):
-        operator = '>='
     elif isinstance(filt, LessThan):
         operator = '<'
+    elif isinstance(filt, GreaterThanOrEquals):
+        operator = '>='
     else:
         operator = '<='
 
