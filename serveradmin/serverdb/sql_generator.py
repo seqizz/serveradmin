@@ -71,9 +71,13 @@ def _get_sql_condition(servertypes, attribute, filt):
                 'Boolean attribute "{}" cannot be used with {}() filter'
                 .format(attribute, type(filt).__name__)
             )
+            if not isinstance(filt.value, bool):
+                raise FilterValueError(
+                    'Boolean attribute "{}" cannot be checked against {}'
+                    .format(attribute, type(filt.value).__name__)
+                )
 
-        # TODO: Better return errors for mismatching datatypes than casting
-        negate = not filt.value or filt.value == 'false'
+        negate = not filt.value
 
     elif isinstance(filt, Regexp):
         value = _raw_sql_escape(filt.value)
@@ -215,8 +219,13 @@ def _value_to_sql(attribute, value):
         except Server.DoesNotExist as error:
             raise FilterValueError(str(error))
 
-    # TODO: Better return errors for mismatching datatypes than casting
     if attribute.type == 'number':
+        if not isinstance(value, (int, float)):
+            raise FilterValueError(
+                'Number attribute "{}" cannot be checked against {}'
+                .format(attribute, type(value).__name__)
+            )
+
         return str(Decimal(value))
 
     return _raw_sql_escape(value)
