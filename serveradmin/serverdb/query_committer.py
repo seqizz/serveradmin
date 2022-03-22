@@ -160,7 +160,7 @@ def _validate(attribute_lookup, changed, changed_objects):
             violations_required,
         )
 
-    newer = _validate_commit(changed, changed_objects)
+    newer = _validate_commit(attribute_lookup,changed, changed_objects)
     if newer:
         raise CommitNewerData('Newer data available', newer)
 
@@ -564,7 +564,7 @@ def _validate_required(changes, servers, servertype_attributes):
     return violations
 
 
-def _validate_commit(changes, servers):
+def _validate_commit(attribute_lookup, changes, servers):
     newer = []
     for attribute_changes in changes:
         object_id = attribute_changes['object_id']
@@ -578,6 +578,9 @@ def _validate_commit(changes, servers):
                 if attr in server:
                     newer.append((object_id, attr, server[attr]))
             elif action == 'update' or action == 'delete':
+                # Skip if the attribute is not the one we're touching
+                if attr not in attribute_lookup:
+                    continue
                 try:
                     if json_encode_extra(server[attr]) != str(change['old']):
                         newer.append((object_id, attr, server[attr]))
