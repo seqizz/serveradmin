@@ -9,9 +9,11 @@
     <link rel="stylesheet" href="{{ STATIC_URL }}css/servershell.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/jquery-ui.min.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/fontawesome.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/dark-mode.css">
 {% endblock %}
 
 {% block content %}
+
     <!-- Servershell JS alerts -->
     <div id="alerts">
         <div id="alert-template" class="alert" style="display: none;">
@@ -65,6 +67,10 @@
                     <div class="form-check">
                         <input type="number" class="form-input" id="autocomplete_delay_commands" value="{{ search_settings.autocomplete_delay_commands }}" onchange="$('#command').autocomplete('option', 'delay', this.value);">
                         <label class="form-input-label" for="autocomplete_delay_commands">Delay in milliseconds before auto completion for commands kicks in.</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="dark_mode" onchange="darkMode.toggle()">
+                        <label class="form-check-label" for="dark_mode">Dark Mode</label>
                     </div>
                     <hr>
                     <b>Keyboard Shortcuts</b>
@@ -194,7 +200,11 @@
 <script src="{{ STATIC_URL }}js/servershell/choose_ip_address.js"></script>
 <script src="{{ STATIC_URL }}js/servershell/autocomplete/search.js"></script>
 <script src="{{ STATIC_URL }}js/servershell/autocomplete/command.js"></script>
+<script src="{{ STATIC_URL }}js/dark-mode.js"></script>
 <script>
+    // Initialize dark mode before document ready
+    darkMode.init();
+
     $(document).ready(function() {
         // We want to allow the user to abort some queries such as search
         servershell._ajax = null;
