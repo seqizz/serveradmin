@@ -2,6 +2,7 @@
 
 Copyright (c) 2019 InnoGames GmbH
 """
+import json
 import sys
 from argparse import ArgumentParser, ArgumentTypeError
 
@@ -44,6 +45,12 @@ def parse_args(args):
         action='append',
         help='Attributes with values to update' + multi_note,
     )
+    parser.add_argument(
+        '-j',
+        '--json',
+        action='store_true',
+        help='Output results in JSON format',
+    )
 
     return parser.parse_args(args)
 
@@ -68,14 +75,26 @@ def main():
             .format(len(query))
         )
 
-    for server in query:
-        if args.reset:
-            apply_resets(server, args.reset)
-        if args.update:
-            apply_updates(server, args.update)
-        print_server(server, attribute_ids_to_print)
-    if args.reset or args.update:
-        query.commit()
+    if args.json:
+        results = []
+        for server in query:
+            if args.reset:
+                apply_resets(server, args.reset)
+            if args.update:
+                apply_updates(server, args.update)
+            results.append(format_server_json(server, attribute_ids_to_print))
+        if args.reset or args.update:
+            query.commit()
+        print(json.dumps(results, indent=2))
+    else:
+        for server in query:
+            if args.reset:
+                apply_resets(server, args.reset)
+            if args.update:
+                apply_updates(server, args.update)
+            print_server(server, attribute_ids_to_print)
+        if args.reset or args.update:
+            query.commit()
 
 
 def attr_value(arg):
@@ -98,6 +117,22 @@ def apply_resets(server, attribute_ids):
 def apply_updates(server, attribute_values):
     for attribute_id, value in attribute_values:
         server.set(attribute_id, value)
+
+
+def format_server_json(server, attribute_ids):
+    """Format server data as a dictionary for JSON output."""
+    output = {}
+    for attribute_id in attribute_ids:
+        if attribute_id not in server:
+            output[attribute_id] = None
+        else:
+            value = server[attribute_id]
+            # Handle MultiAttr by converting to list
+            if isinstance(value, MultiAttr):
+                output[attribute_id] = list(value)
+            else:
+                output[attribute_id] = value
+    return output
 
 
 def print_server(server, attribute_ids):
